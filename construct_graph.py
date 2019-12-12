@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import timeit
 import itertools
 from typing import Dict
+from pyvis.network import Network
 
 G = nx.Graph()
 GENRES = []
@@ -50,16 +51,16 @@ def get_album_featured_artists(album_id: str) -> [Dict[str, str]]:
     # list of lists of featured artists
     artist_lst_lst: [[Dict]] = [track["artists"][1:] for track in album_tracks]
 
-    # flatten the list (https://stackoverflow.com/a/716482)
+    # flatten the list https://stackoverflow.com/a/716482
     artist_lst: [Dict] = list(itertools.chain.from_iterable(artist_lst_lst))
 
-    # filter the dictionary by key (https://stackoverflow.com/a/953097)
+    # filter the dictionary by key https://stackoverflow.com/a/953097
     return [{k: v for k, v in artist.items() if k in ["name", "id"]} for artist in artist_lst]
 
 
 def _include(artist_id):
     # only include "mainstream" rappers in the graph
-    # (https://stackoverflow.com/a/17735466)
+    # https://stackoverflow.com/a/17735466
     artist = sp.artist(artist_id)
     return artist["popularity"] >= 85 and not set(artist["genres"]).isdisjoint(GENRES)
 
@@ -98,8 +99,8 @@ def construct_graph():
 
 
 def draw_graph():
-    # (https://networkx.github.io/documentation/stable/reference/drawing.html#layout)
-    # (https://networkx.github.io/documentation/stable/reference/generated/networkx.drawing.nx_pylab.draw_networkx.html)
+    # https://networkx.github.io/documentation/stable/reference/drawing.html#layout
+    # https://networkx.github.io/documentation/stable/reference/generated/networkx.drawing.nx_pylab.draw_networkx.html
     pos = nx.spring_layout(G)
     node_labels = {node: node for node in G.nodes()}
     nx.draw(G, pos, edge_color='black', width=1, linewidths=1,
@@ -111,23 +112,31 @@ def draw_graph():
     plt.show()
 
 
+def vis_graph():
+    # https://pyvis.readthedocs.io/en/latest/tutorial.html#example-visualizing-a-game-of-thrones-character-network
+    nt = Network(height="750px", width="100%", bgcolor="#222222", font_color="white")
+    nt.barnes_hut()
+    nt.from_nx(G)
+    neighbor_map = nt.get_adj_list()
+    for node in nt.nodes:
+        node["value"] = len(neighbor_map[node["id"]])
+    nt.show("rappers.html")
+
+
+def time(func, *args):
+    t0 = timeit.default_timer()
+    func(*args)
+    t1 = timeit.default_timer()
+    print(func.__name__ + " in {0:.2f}s".format(t1 - t0))
+
+
 def main():
-    start = timeit.default_timer()
-
     read_files()
-    construct_graph()
-    print("{0:.2f}".format(timeit.default_timer() - start))
-    print("=" * 10)
-
-    # TODO the graph is "almost complete"
-    print(nx.center(G))
-    print(nx.eccentricity(G))
-
-    print("{0:.2f}".format(timeit.default_timer() - start))
-    print("=" * 10)
-
-    draw_graph()
-    print("{0:.2f}".format(timeit.default_timer() - start))
+    time(construct_graph)
+    # print(nx.center(G))
+    # print(nx.eccentricity(G))
+    # draw_graph()
+    vis_graph()
 
 
 if __name__ == '__main__':
