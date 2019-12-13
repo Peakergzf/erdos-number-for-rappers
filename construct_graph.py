@@ -1,10 +1,22 @@
-from spotify import sp
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+from credentials import CLIENT_ID, CLIENT_SECRET
 import networkx as nx
+from pyvis.network import Network
 import matplotlib.pyplot as plt
 import timeit
 import itertools
 from typing import Dict
-from pyvis.network import Network
+
+# TODO
+#  1. remove duplicate Jay-Z and Jay Z
+#  2. also search for singles
+#  3. adjust popularity threshold
+#  4. identify all connected components of the graph
+
+
+ccm = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
+sp = spotipy.Spotify(client_credentials_manager=ccm)
 
 G = nx.Graph()
 GENRES = []
@@ -23,11 +35,12 @@ def read_files():
             ARTISTS.append(line.rstrip())
 
 
-def get_artist_id(name: str) -> str:
-    return sp.search(q="artist:" + name, type="artist")["artists"]["items"][0]["id"]
+def get_artist_id(artist_name: str) -> str:
+    return sp.search(q="artist:" + artist_name, type="artist")["artists"]["items"][0]["id"]
 
 
 def get_artist_album_ids(artist_id: str) -> [str]:
+    # https://github.com/plamere/spotipy/blob/master/examples/artist_albums.py#L15
     albums: [Dict] = []
     results = sp.artist_albums(artist_id, album_type="album")
     albums.extend(results["items"])
@@ -59,20 +72,17 @@ def get_album_featured_artists(album_id: str) -> [Dict[str, str]]:
 
 
 def _include(artist_id):
-    # only include "mainstream" rappers in the graph
-    # https://stackoverflow.com/a/17735466
     artist = sp.artist(artist_id)
+    # only include "mainstream" rappers in the graph
+    # check if two sets are disjoint https://stackoverflow.com/a/17735466
     return artist["popularity"] >= 85 and not set(artist["genres"]).isdisjoint(GENRES)
 
 
-def add_artist(artist: str) -> None:
-    # if len(G) > 10:
-    #     return
+def add_artist(artist_name: str, freq_cnt=False) -> None:
+    if artist_name not in G:
+        G.add_node(artist_name)
 
-    if artist not in G:
-        G.add_node(artist)
-
-    artist_id = get_artist_id(artist)
+    artist_id = get_artist_id(artist_name)
     album_ids = get_artist_album_ids(artist_id)
 
     featured_artist_lst_lst = [get_album_featured_artists(album_id) for album_id in album_ids]
@@ -81,16 +91,19 @@ def add_artist(artist: str) -> None:
     for featured_artist in featured_artist_lst:
         feat_name = featured_artist["name"]
         feat_id = featured_artist["id"]
-        if feat_name.lower() == artist.lower():
+        if feat_name.lower() == artist_name.lower():
             continue
         if not _include(feat_id):
             continue
 
-        if G.has_node(feat_name) and G.has_edge(artist, feat_name):
-            G[artist][feat_name]["weight"] += 1
+        if freq_cnt:
+            if G.has_edge(artist_name, feat_name):
+                G[artist_name][feat_name]["weight"] += 1
+            else:
+                G.add_edge(artist_name, feat_name, weight=1)
         else:
-            G.add_edge(artist, feat_name, weight=1)
-            # add_artist(feat_name)
+            if not G.has_edge(artist_name, feat_name):
+                G.add_edge(artist_name, feat_name, weight=1)
 
 
 def construct_graph():
@@ -119,6 +132,7 @@ def vis_graph():
     nt.from_nx(G)
     neighbor_map = nt.get_adj_list()
     for node in nt.nodes:
+        node["title"] += " neighbors:<br>" + "<br>".join(neighbor_map[node["id"]])
         node["value"] = len(neighbor_map[node["id"]])
     nt.show("rappers.html")
 
@@ -132,10 +146,18 @@ def time(func, *args):
 
 def main():
     read_files()
+
+    print(sp.artist((get_artist_id(ARTISTS[0]))).keys())
+    for artist_name in ARTISTS:
+        artist_id = get_artist_id(artist_name)
+        artist = sp.artist(artist_id)
+        print(artist["name"], artist["popularity"], artist["genres"])
+
     time(construct_graph)
-    # print(nx.center(G))
-    # print(nx.eccentricity(G))
-    # draw_graph()
+    print(len(G))
+    if nx.is_connected(G):
+        print(nx.eccentricity(G))
+        print(nx.center(G))
     vis_graph()
 
 
