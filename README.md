@@ -48,12 +48,14 @@ is defined as their distance to Young Thug in the graph.
 
 Rappers collaborate more often than artists in any other genres
 and the featuring phenomenon is bigger than ever. 
-From the distribution of Young Thug Number below we can see that 
+From the distribution of Young Thug Number above we can see that 
 he has collaborated with at least 42 rappers and other 76 rappers 
 are just one collaboration away from him.
 
 <br>
 :raised_hands:
 <br>
+<br>
+
 <img src="/images/young_thug.png" height="20%" width="20%">
 
