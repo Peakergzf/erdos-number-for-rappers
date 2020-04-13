@@ -50,7 +50,7 @@ Rappers collaborate more often than artists in any other genres
 and the featuring phenomenon is bigger than ever. 
 From the distribution of Young Thug Number above we can see that 
 he has collaborated with at least 42 rappers and other 76 rappers 
-are just one collaboration away from him.
+are just two collaborations away from him.
 
 <br>
 :raised_hands:
