@@ -1,7 +1,7 @@
 # Erdős Number for Rappers
 **_a.k.a. Young Thug Number_**
 
-### Erdős Number
+## Erdős Number
 Consider the collaboration graph of mathematicians, 
 where each vertex represents a mathematician and 
 two vertices are adjacent if the they coauthored a paper.
@@ -9,7 +9,7 @@ two vertices are adjacent if the they coauthored a paper.
 of a mathematician is defined as their distance to 
 [Paul Erdős](https://en.wikipedia.org/wiki/Paul_Erd%C5%91s) in the graph.
 
-### Collaboration Graph of Rappers
+## Collaboration Graph of Rappers
 Similarly, we can define the collaboration graph of rappers,
 where each vertex represents a rapper and 
 two vertices are adjacent if the they collaborated on a song.
@@ -28,7 +28,7 @@ this is determined by the "popularity" attribute of each artist provided by Spot
 <img src="/images/screenshot1.png" height="60%" width="60%">
 
 
-### Young Thug Number
+## Young Thug Number
 The [center](https://mathworld.wolfram.com/GraphCenter.html)
 of a graph is the set of vertices of
 [eccentricity](https://mathworld.wolfram.com/GraphEccentricity.html)
